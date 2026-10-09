@@ -1,0 +1,636 @@
+/* Componentes reutilizables: botones, tarjetas, pasos, insignias, avisos y tablas. */
+
+/* Botones (objetivo táctil >= 44 px) */
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--esp-2);
+    min-height: var(--tactil);
+    padding: var(--esp-2) var(--esp-5);
+    border: 2px solid transparent;
+    border-radius: var(--radio);
+    font: inherit;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.boton--primario {
+    background: var(--color-primario);
+    color: #FFFFFF;
+}
+
+.boton--primario:hover {
+    background: var(--color-primario-oscuro);
+    color: #FFFFFF;
+}
+
+.boton--secundario {
+    background: transparent;
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
+.boton--secundario:hover {
+    background: var(--color-info-fondo);
+    color: var(--color-primario-oscuro);
+}
+
+/* En el hero (fondo oscuro) los botones se invierten para mantener el contraste. */
+.hero .boton--primario {
+    background: #FFFFFF;
+    color: var(--color-hero);
+}
+
+.hero .boton--primario:hover {
+    background: var(--color-hero-suave);
+    color: var(--color-hero);
+}
+
+.hero .boton--secundario {
+    border-color: #FFFFFF;
+    color: #FFFFFF;
+}
+
+.hero .boton--secundario:hover {
+    background: rgb(255 255 255 / 0.12);
+    color: #FFFFFF;
+}
+
+.boton[disabled],
+.boton[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Botón de menú (solo con JavaScript y en pantallas pequeñas) */
+.boton-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--esp-2);
+    min-height: var(--tactil);
+    padding: var(--esp-2) var(--esp-3);
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.boton-menu__icono,
+.boton-menu__icono::before,
+.boton-menu__icono::after {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+}
+
+.boton-menu__icono {
+    position: relative;
+}
+
+.boton-menu__icono::before,
+.boton-menu__icono::after {
+    content: "";
+    position: absolute;
+    left: 0;
+}
+
+.boton-menu__icono::before { top: -6px; }
+.boton-menu__icono::after { top: 6px; }
+
+/* Tarjetas (El problema) */
+.tarjeta {
+    padding: var(--esp-5);
+    background: var(--color-fondo);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+}
+
+.tarjeta__icono {
+    margin-bottom: var(--esp-3);
+}
+
+.tarjeta__titulo {
+    font-size: 1.0625rem;
+}
+
+.tarjeta__texto {
+    margin: 0;
+    color: var(--color-texto-suave);
+}
+
+/* Pasos (Cómo funciona): numeración generada por CSS sobre una <ol>. */
+.pasos {
+    display: grid;
+    gap: var(--esp-5);
+    margin-top: var(--esp-5);
+    list-style: none;
+    counter-reset: paso;
+}
+
+.paso {
+    position: relative;
+    padding-left: calc(48px + var(--esp-4));
+    counter-increment: paso;
+}
+
+.paso::before {
+    content: counter(paso);
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    background: var(--color-acento);
+    color: #FFFFFF;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: 50%;
+}
+
+.paso__titulo {
+    margin-bottom: var(--esp-1);
+}
+
+.paso__quien {
+    margin-bottom: var(--esp-2);
+    color: var(--color-acento);
+    font-size: var(--texto-pequeno);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.paso__texto {
+    margin-bottom: var(--esp-2);
+    color: var(--color-texto-suave);
+}
+
+.paso__estado {
+    margin: 0;
+    font-size: var(--texto-pequeno);
+}
+
+/* Insignias (el texto siempre indica el estado; el color es refuerzo) */
+.insignia {
+    display: inline-block;
+    padding: 0.125rem var(--esp-3);
+    background: var(--color-info-fondo);
+    color: var(--color-texto);
+    font-size: var(--texto-pequeno);
+    font-weight: 600;
+    border-radius: var(--radio-pildora);
+}
+
+/* Aviso informativo */
+.aviso {
+    max-width: var(--lectura);
+    padding: var(--esp-4);
+    background: var(--color-info-fondo);
+    border-left: 4px solid var(--color-primario);
+    border-radius: var(--radio);
+}
+
+/* Beneficios */
+.beneficio {
+    padding: var(--esp-5);
+    background: var(--color-fondo);
+    border-top: 4px solid var(--color-acento);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+}
+
+.beneficio__icono {
+    margin-bottom: var(--esp-3);
+}
+
+.beneficio__texto {
+    margin: 0;
+    color: var(--color-texto-suave);
+}
+
+/* Tablas */
+.tabla-envoltura {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.tabla {
+    width: 100%;
+    background: var(--color-fondo);
+}
+
+.tabla caption {
+    padding-bottom: var(--esp-2);
+    font-weight: 600;
+    text-align: left;
+}
+
+.tabla th,
+.tabla td {
+    padding: var(--esp-2) var(--esp-3);
+    border-bottom: 1px solid var(--color-borde);
+    text-align: left;
+}
+
+.tabla thead th {
+    background: var(--color-fondo-alt);
+    font-size: var(--texto-pequeno);
+}
+
+.tabla--compacta {
+    max-width: 420px;
+}
+
+.numero {
+    font-variant-numeric: tabular-nums;
+}
+
+.como-funciona__extra {
+    display: grid;
+    gap: var(--esp-5);
+    margin-top: var(--esp-6);
+}
+
+/* Botón de sesión del encabezado (texto lo cambia js/modules/acceso.js). */
+.encabezado__sesion {
+    max-width: 11rem;
+    padding-inline: var(--esp-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.boton--ancho {
+    width: 100%;
+}
+
+/* Mensajes de estado de las secciones dinámicas (role=status / role=alert). */
+.mensaje {
+    margin: 0;
+    color: var(--color-texto-suave);
+}
+
+.mensaje--error {
+    padding: var(--esp-3) var(--esp-4);
+    background: #FDECEA;
+    color: var(--color-error);
+    border-left: 4px solid var(--color-error);
+    border-radius: var(--radio);
+    font-weight: 600;
+}
+
+.mensaje--exito {
+    color: var(--color-exito);
+    font-weight: 600;
+}
+
+/* Cifras en vivo */
+.cifra {
+    display: grid;
+    gap: var(--esp-1);
+    padding: var(--esp-5);
+    background: var(--color-fondo);
+    border: 1px solid var(--color-borde);
+    border-top: 4px solid var(--color-primario);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+}
+
+.cifra__valor {
+    color: var(--color-primario);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.cifra__etiqueta {
+    font-weight: 600;
+}
+
+.cifra__ayuda {
+    color: var(--color-texto-suave);
+    font-size: var(--texto-pequeno);
+}
+
+[aria-busy="true"] .cifra__valor {
+    color: var(--color-texto-suave);
+}
+
+.cifras__pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--esp-3) var(--esp-4);
+    margin-top: var(--esp-5);
+}
+
+/* Acceso */
+.acceso {
+    display: grid;
+    gap: var(--esp-5);
+}
+
+.panel {
+    display: grid;
+    gap: var(--esp-4);
+    padding: var(--esp-5);
+    background: var(--color-fondo);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+}
+
+.panel > .mensaje:empty {
+    display: none;
+}
+
+.sesion {
+    display: grid;
+    gap: var(--esp-4);
+    justify-items: start;
+}
+
+.sesion__saludo {
+    margin: 0;
+    color: var(--color-primario);
+}
+
+.sesion__datos {
+    display: grid;
+    gap: var(--esp-2);
+    margin: 0;
+}
+
+.sesion__datos div {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: var(--esp-3);
+}
+
+.sesion__datos dt {
+    color: var(--color-texto-suave);
+}
+
+.sesion__datos dd {
+    margin: 0;
+    font-weight: 600;
+    text-transform: none;
+}
+
+/* Caja de éxito al registrar (número y fecha límite). */
+.mensaje--exito-caja {
+    padding: var(--esp-4);
+    background: #E7F5EE;
+    color: var(--color-texto);
+    border-left: 4px solid var(--color-exito);
+    border-radius: var(--radio);
+}
+
+.mensaje--exito-caja p {
+    margin: 0 0 var(--esp-1);
+}
+
+.mensaje--exito-caja p:first-child {
+    color: var(--color-exito);
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.mensaje--exito-caja strong {
+    font-variant-numeric: tabular-nums;
+}
+
+.aviso .boton {
+    margin-top: var(--esp-2);
+}
+
+.aviso p {
+    margin: 0;
+}
+
+/* ---------------------------------------------------------------- Mis solicitudes (CP-FRONT-05) */
+
+/* Insignias por estado: texto oscuro sobre tono claro (>= 12:1); el nombre del estado siempre se escribe. */
+.insignia--registrada { background: var(--color-aviso-fondo); }
+.insignia--asignada,
+.insignia--en_proceso { background: var(--color-info-fondo); }
+.insignia--atendida,
+.insignia--cerrada { background: #E7F5EE; }
+.insignia--rechazada,
+.insignia--cancelada { background: #ECEEF1; }
+.insignia--vencida {
+    background: #FDECEA;
+    border: 1px solid var(--color-error);
+}
+
+.boton--peligro {
+    background: var(--color-error);
+    color: #FFFFFF;
+}
+
+.boton--peligro:hover {
+    background: #8F1C13;
+    color: #FFFFFF;
+}
+
+.boton--pequeno {
+    padding: var(--esp-1) var(--esp-3);
+    font-size: var(--texto-pequeno);
+}
+
+.aviso--peligro {
+    background: #FDECEA;
+    border-left-color: var(--color-error);
+}
+
+.lista__barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--esp-3);
+    margin: var(--esp-5) 0 var(--esp-3);
+}
+
+/* Tabla de solicitudes: en móvil cada fila es una tarjeta (la etiqueta sale de data-etiqueta). */
+.tabla--solicitudes thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.tabla--solicitudes,
+.tabla--solicitudes tbody,
+.tabla--solicitudes tr,
+.tabla--solicitudes td {
+    display: block;
+    width: 100%;
+}
+
+.tabla--solicitudes {
+    background: transparent;
+}
+
+.tabla--solicitudes tr {
+    margin-bottom: var(--esp-3);
+    padding: var(--esp-3) var(--esp-4);
+    background: var(--color-fondo);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+}
+
+.tabla--solicitudes td {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: var(--esp-2);
+    padding: var(--esp-1) 0;
+    border: 0;
+    overflow-wrap: anywhere;
+}
+
+.tabla--solicitudes td::before {
+    content: attr(data-etiqueta);
+    color: var(--color-texto-suave);
+    font-size: var(--texto-pequeno);
+    font-weight: 600;
+}
+
+.tabla--solicitudes td.celda--acciones::before {
+    content: none;
+}
+
+.tabla--solicitudes td.celda--acciones {
+    display: block;
+    padding-top: var(--esp-2);
+}
+
+.tabla--solicitudes .celda--numero {
+    font-weight: 700;
+}
+
+.tabla--solicitudes tr.fila--activa {
+    background: #FFF8E1;
+    border-color: var(--color-foco);
+}
+
+.paginacion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--esp-3);
+    margin-top: var(--esp-4);
+}
+
+.paginacion__texto {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Detalle */
+.detalle {
+    margin-top: var(--esp-5);
+}
+
+.detalle__cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--esp-3);
+}
+
+.detalle__titulo {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.detalle__datos {
+    display: grid;
+    gap: var(--esp-2);
+    margin: 0 0 var(--esp-4);
+}
+
+.detalle__datos div {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: var(--esp-3);
+}
+
+.detalle__datos dt {
+    color: var(--color-texto-suave);
+}
+
+.detalle__datos dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.detalle__subtitulo {
+    margin: var(--esp-4) 0 var(--esp-2);
+    font-size: 1rem;
+}
+
+.detalle__descripcion {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.historial {
+    display: grid;
+    gap: var(--esp-3);
+    padding-left: var(--esp-5);
+}
+
+.historial__evento p {
+    margin: 0;
+}
+
+.historial__motivo {
+    overflow-wrap: anywhere;
+}
+
+.historial__autor {
+    color: var(--color-texto-suave);
+    font-size: var(--texto-pequeno);
+}
+
+.cancelar {
+    margin-top: var(--esp-5);
+    padding-top: var(--esp-4);
+    border-top: 1px solid var(--color-borde);
+}
+
+.cancelar__formulario {
+    margin-top: var(--esp-3);
+}
+
+.cancelar__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-3);
+}
+
+/* Insignias y botones de la lista no se parten; en tarjetas la insignia no se estira. */
+.insignia,
+.boton--pequeno {
+    white-space: nowrap;
+}
+
+.tabla--solicitudes td > .insignia,
+.tabla--solicitudes td > span {
+    justify-self: start;
+}

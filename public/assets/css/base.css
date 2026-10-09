@@ -1,0 +1,98 @@
+/* Base: reinicio mínimo, tipografía y foco visible. */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--alto-encabezado) + var(--esp-4));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+body {
+    margin: 0;
+    font-family: var(--fuente);
+    font-size: var(--texto-base);
+    line-height: var(--interlineado);
+    color: var(--color-texto);
+    background: var(--color-fondo);
+}
+
+h1,
+h2,
+h3 {
+    margin: 0 0 var(--esp-3);
+    line-height: 1.2;
+    color: var(--color-texto);
+}
+
+h1 { font-size: var(--texto-h1); }
+h2 { font-size: var(--texto-h2); }
+h3 { font-size: var(--texto-h3); }
+
+p {
+    margin: 0 0 var(--esp-4);
+}
+
+img,
+svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+ul,
+ol {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: var(--color-primario);
+    text-underline-offset: 0.15em;
+}
+
+a:hover {
+    color: var(--color-primario-oscuro);
+}
+
+/* Foco visible y consistente (anillo amarillo + contorno oscuro para fondos claros). */
+:focus-visible {
+    outline: 3px solid var(--color-foco);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px var(--color-texto);
+    border-radius: 2px;
+}
+
+main:focus {
+    outline: none;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+/* Texto solo para lectores de pantalla. */
+.visualmente-oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+[hidden] {
+    display: none !important;
+}

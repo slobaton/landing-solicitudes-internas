@@ -1,0 +1,62 @@
+# Suite API solicitudes — 2026-10-08 15:53:37 — http://127.0.0.1:8080
+# OpenAPI: cada ruta de routes/api.php está documentada
+ok 1 - openapi.yaml no contiene tabuladores
+ok 2 - openapi.yaml declara openapi: 3.1.0
+ok 3 - GET /health documentada
+ok 4 - POST /auth/login documentada
+ok 5 - POST /auth/logout documentada
+ok 6 - GET /auth/me documentada
+ok 7 - POST /solicitudes documentada
+ok 8 - GET /solicitudes documentada
+ok 9 - GET /solicitudes/{id} documentada
+ok 10 - PUT /solicitudes/{id} documentada
+ok 11 - DELETE /solicitudes/{id} documentada
+ok 12 - No hay operaciones documentadas sin ruta implementada
+# Sistema
+ok 13 - GET /health -> 200 y base_datos ok
+ok 14 - Ruta inexistente -> 404 RUTA_NO_ENCONTRADA
+ok 15 - DELETE /health -> 405 con Allow: GET
+# Autenticación
+ok 16 - GET /auth/me sin sesión -> 401 NO_AUTENTICADO
+ok 17 - POST /auth/login con JSON mal formado -> 400 JSON_INVALIDO
+ok 18 - POST /auth/login {} -> 422 VALIDACION con detalles
+ok 19 - POST /auth/login con contraseña errónea -> 401 CREDENCIALES_INVALIDAS
+ok 20 - POST /auth/login solicitante -> 200, cookie HttpOnly y csrf_token
+ok 21 - POST /auth/login jefe -> 200 con rol JEFE_AREA
+ok 22 - GET /auth/me con sesión -> 200 y mismo csrf_token
+# Solicitudes: registrar y consultar
+ok 23 - POST /solicitudes sin sesión -> 401
+ok 24 - POST /solicitudes sin X-CSRF-Token -> 403 CSRF_INVALIDO
+ok 25 - POST /solicitudes inválida -> 422 con errores por campo
+ok 26 - POST /solicitudes con área inexistente -> 422
+ok 27 - POST /solicitudes válida -> 201, Location, número AAAA-NNNNN, REGISTRADA, version 0, historial REGISTRO
+ok 28 - fecha_limite posterior a fecha_registro
+ok 29 - GET /solicitudes?q=<número> -> 200 con la solicitud creada
+ok 30 - GET /solicitudes con filtros y paginación -> 200 y meta coherente
+ok 31 - GET /solicitudes con parámetros inválidos -> 400 PARAMETRO_INVALIDO
+ok 32 - GET /solicitudes del jefe no incluye solicitudes ajenas
+ok 33 - GET /solicitudes/{id} propia -> 200 con historial
+ok 34 - GET /solicitudes/{id} ajena -> 403 SIN_PERMISO
+ok 35 - GET /solicitudes/{id} inexistente -> 404 NO_ENCONTRADO
+ok 36 - GET /solicitudes/abc -> 400 PARAMETRO_INVALIDO
+# Solicitudes: editar y cancelar
+ok 37 - PUT sin sesión -> 401
+ok 38 - PUT sin X-CSRF-Token -> 403 CSRF_INVALIDO
+ok 39 - PUT de solicitud ajena -> 403 SIN_PERMISO
+ok 40 - PUT de solicitud inexistente -> 404
+ok 41 - PUT cambiando área destino -> 422
+ok 42 - PUT válido -> 200, version 1, historial EDICION con antes/después del título
+ok 43 - PUT con version desactualizada -> 409 CONFLICTO_VERSION
+ok 44 - DELETE sin motivo -> 422
+ok 45 - DELETE de solicitud ajena -> 403 SIN_PERMISO
+ok 46 - DELETE con version desactualizada -> 409 CONFLICTO_VERSION
+ok 47 - DELETE válido -> 200, CANCELADA, fecha_cierre, version 2, historial CAMBIO_ESTADO con motivo
+ok 48 - PUT sobre cancelada -> 409 ESTADO_NO_PERMITE
+ok 49 - DELETE sobre cancelada -> 409 ESTADO_NO_PERMITE
+ok 50 - La solicitud cancelada sigue existiendo (GET -> 200, no se borra)
+# Cierre de sesión
+ok 51 - POST /auth/logout con token inválido -> 403 CSRF_INVALIDO
+ok 52 - POST /auth/logout válido -> 200
+ok 53 - GET /auth/me tras logout -> 401
+ok 54 - POST /auth/logout del jefe -> 200
+# Resultado: 54 pruebas, 54 correctas, 0 fallidas. Solicitud creada: id 9 (2026-00009), cancelada.

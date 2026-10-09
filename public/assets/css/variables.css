@@ -1,0 +1,48 @@
+/* Variables de diseño (diseno_landing.md §4-§5). Contrastes WCAG verificados en CP-FRONT-01. */
+:root {
+    /* Color */
+    --color-texto: #1B2A41;          /* 14.44:1 sobre blanco */
+    --color-texto-suave: #4A5568;    /* 7.53:1 sobre blanco, 6.95:1 sobre fondo alterno */
+    --color-primario: #1F4E8C;       /* 8.31:1 con blanco */
+    --color-primario-oscuro: #163A6B;/* 11.34:1 con blanco */
+    --color-acento: #0F766E;         /* 5.47:1 sobre blanco */
+    --color-fondo: #FFFFFF;
+    --color-fondo-alt: #F4F6F9;
+    --color-hero: #1B2A41;
+    --color-hero-suave: #C9D6EA;     /* 9.83:1 sobre el hero */
+    --color-borde: #D5DCE6;
+    --color-foco: #F2A900;           /* 7.19:1 sobre el hero */
+    --color-exito: #067647;
+    --color-error: #B42318;
+    --color-aviso: #B54708;
+    --color-aviso-fondo: #FDEBD8;
+    --color-info-fondo: #E8EEF7;
+
+    /* Tipografía */
+    --fuente: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --texto-base: 1rem;
+    --texto-pequeno: 0.875rem;
+    --texto-h1: clamp(2rem, 1.4rem + 2.6vw, 2.75rem);
+    --texto-h2: clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
+    --texto-h3: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem);
+    --interlineado: 1.6;
+
+    /* Espaciado (múltiplos de 0.25rem) */
+    --esp-1: 0.25rem;
+    --esp-2: 0.5rem;
+    --esp-3: 0.75rem;
+    --esp-4: 1rem;
+    --esp-5: 1.5rem;
+    --esp-6: 2rem;
+    --esp-7: 2.5rem;
+    --esp-8: 4rem;
+
+    /* Forma */
+    --radio: 8px;
+    --radio-pildora: 999px;
+    --sombra: 0 1px 2px rgb(27 42 65 / 0.08), 0 4px 12px rgb(27 42 65 / 0.06);
+    --contenedor: 1120px;
+    --lectura: 70ch;
+    --tactil: 44px;
+    --alto-encabezado: 64px;
+}

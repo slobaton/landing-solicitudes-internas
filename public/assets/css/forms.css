@@ -1,0 +1,93 @@
+/* Formularios: estilos base de campos, etiquetas, ayudas y errores.
+   Los usan Acceso (CP-FRONT-03) y Registrar solicitud (CP-FRONT-04). */
+.campo {
+    display: grid;
+    align-content: start; /* en filas de 2 columnas los controles no se estiran */
+    gap: var(--esp-1);
+    margin-bottom: var(--esp-4);
+}
+
+.campo__ayuda:empty {
+    display: none;
+}
+
+.campo__etiqueta {
+    font-weight: 600;
+}
+
+.campo__obligatorio {
+    color: var(--color-texto-suave);
+    font-weight: 400;
+    font-size: var(--texto-pequeno);
+}
+
+.campo__control {
+    width: 100%;
+    min-height: var(--tactil);
+    padding: var(--esp-2) var(--esp-3);
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    border: 1px solid var(--color-texto-suave);
+    border-radius: var(--radio);
+    font: inherit;
+}
+
+textarea.campo__control {
+    min-height: 8rem;
+    resize: vertical;
+}
+
+.campo__ayuda {
+    color: var(--color-texto-suave);
+    font-size: var(--texto-pequeno);
+}
+
+.campo__error {
+    color: var(--color-error);
+    font-size: var(--texto-pequeno);
+    font-weight: 600;
+}
+
+.campo__control[aria-invalid="true"] {
+    border: 2px solid var(--color-error);
+}
+
+.formulario {
+    display: grid;
+    gap: var(--esp-1);
+}
+
+.formulario .campo:last-of-type {
+    margin-bottom: var(--esp-5);
+}
+
+/* Registrar solicitud (CP-FRONT-04) */
+.contenedor--formulario {
+    max-width: 860px;
+}
+
+.formulario__fila {
+    display: grid;
+    gap: 0 var(--esp-5);
+}
+
+.campo--corto {
+    max-width: 24rem;
+}
+
+select.campo__control {
+    appearance: auto;
+    cursor: pointer;
+}
+
+.campo__control:disabled {
+    background: var(--color-fondo-alt);
+    color: var(--color-texto-suave);
+    cursor: not-allowed;
+}
+
+.contador {
+    display: inline-block;
+    margin-left: var(--esp-2);
+    font-variant-numeric: tabular-nums;
+}

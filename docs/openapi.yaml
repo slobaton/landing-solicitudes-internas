@@ -1,0 +1,934 @@
+openapi: 3.1.0
+info:
+  title: API de solicitudes internas
+  version: 1.1.0
+  summary: Autenticación, solicitudes (RF-01, RF-02, RF-03, RF-09, RF-14) y endpoints de la landing (estadísticas y catálogos).
+  description: |
+    API REST JSON del Sistema de seguimiento de solicitudes internas (PHP puro, MVC, MySQL 8).
+    Fuente: `docs/contrato_solicitudes.md` (CP-API-01, aprobado).
+
+    - Autenticación por sesión PHP (cookie `SIS_SESSID`, HttpOnly, SameSite=Lax).
+    - Toda petición POST/PUT/DELETE autenticada exige la cabecera `X-CSRF-Token`
+      con el token devuelto por `login` o `me` (excepto `POST /auth/login`).
+    - Cada petición autenticada verifica que el usuario siga existiendo y activo;
+      si no, destruye la sesión y responde 401 (decisión del usuario, 2026-10-07).
+    - `DELETE /solicitudes/{id}` **no borra**: cancela la solicitud (estado CANCELADA) con motivo.
+    - Landing (Trabajo Final, `docs/diseno_landing.md` §8): `GET /estadisticas` es público y solo
+      devuelve conteos globales; `GET /catalogos` requiere sesión y solo lista registros activos.
+    - 1.1.0 (CP-FRONT-03/04): se agregaron `/estadisticas` y `/catalogos`; los endpoints existentes no cambiaron.
+    - Fechas `YYYY-MM-DD HH:MM:SS` en la zona horaria de la aplicación (America/La_Paz).
+servers:
+  - url: http://127.0.0.1:8080/api/v1
+    description: Servidor local de desarrollo (php -S)
+tags:
+  - name: Sistema
+  - name: Autenticación
+  - name: Solicitudes
+
+paths:
+  /health:
+    get:
+      tags: [Sistema]
+      operationId: health
+      summary: Comprueba que la API y la base de datos responden
+      security: []
+      responses:
+        '200':
+          description: API y BD operativas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Health'
+        '503':
+          $ref: '#/components/responses/ServicioNoDisponible'
+
+  /estadisticas:
+    get:
+      tags: [Sistema]
+      operationId: estadisticas
+      summary: Cifras públicas para la landing (solo conteos agregados)
+      description: |
+        Público, sin sesión (CP-FRONT-03, diseno_landing.md §8.1). Solo conteos globales por estado;
+        nunca títulos, números de solicitud, personas ni desgloses por área. `total` = suma de `por_estado`.
+      security: []
+      responses:
+        '200':
+          description: Conteos actuales
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Estadisticas'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /auth/login:
+    post:
+      tags: [Autenticación]
+      operationId: login
+      summary: Inicia sesión (RF-01)
+      description: |
+        Mensaje único ante usuario inexistente, inactivo o contraseña incorrecta.
+        Tras 5 fallos en 15 minutos para el mismo usuario e IP responde 429.
+        Registra LOGIN / LOGIN_FALLIDO en `aud_auditoria`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginEntrada'
+      responses:
+        '200':
+          description: Sesión iniciada. Devuelve la cookie `SIS_SESSID`.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              example: SIS_SESSID=0d10...; path=/; HttpOnly; SameSite=Lax
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Sesion'
+        '400':
+          $ref: '#/components/responses/JsonInvalido'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaError'
+              example:
+                ok: false
+                error:
+                  codigo: CREDENCIALES_INVALIDAS
+                  mensaje: Usuario o contraseña incorrectos.
+                  detalles: null
+        '422':
+          $ref: '#/components/responses/Validacion'
+        '429':
+          description: Demasiados intentos fallidos
+          headers:
+            Retry-After:
+              description: Segundos de espera
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaError'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /auth/logout:
+    post:
+      tags: [Autenticación]
+      operationId: logout
+      summary: Cierra la sesión
+      description: El cierre de sesión no se audita en la BD (decisión del usuario, 2026-10-07).
+      parameters:
+        - $ref: '#/components/parameters/CsrfToken'
+      responses:
+        '200':
+          description: Sesión cerrada; la cookie se expira
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          mensaje:
+                            type: string
+                            example: Sesión cerrada.
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/CsrfInvalido'
+
+  /auth/me:
+    get:
+      tags: [Autenticación]
+      operationId: me
+      summary: Usuario de la sesión, sus roles y el token CSRF vigente
+      responses:
+        '200':
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Sesion'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /catalogos:
+    get:
+      tags: [Solicitudes]
+      operationId: catalogos
+      summary: Áreas, tipos de solicitud y prioridades activos (formulario de registro)
+      description: |
+        Requiere sesión (CP-FRONT-04, diseno_landing.md §8.2). Solo registros con `activo = 1` (RN-D12).
+        No expone `jefe_usuario_id`, `activo` ni fechas de auditoría. `POST /solicitudes` vuelve a validar cada id.
+      responses:
+        '200':
+          description: Catálogos activos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Catalogos'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /solicitudes:
+    post:
+      tags: [Solicitudes]
+      operationId: registrarSolicitud
+      summary: Registra una solicitud (RF-02, RF-03)
+      description: |
+        El número `AAAA-NNNNN`, la fecha de registro, el estado REGISTRADA y la fecha límite
+        (horas laborales según la prioridad) los asigna el sistema. Los campos controlados
+        por el sistema que envíe el cliente se ignoran.
+      parameters:
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudEntrada'
+      responses:
+        '201':
+          description: Solicitud registrada
+          headers:
+            Location:
+              schema:
+                type: string
+              example: /api/v1/solicitudes/1
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SolicitudDetalle'
+        '400':
+          $ref: '#/components/responses/JsonInvalido'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/CsrfInvalido'
+        '422':
+          $ref: '#/components/responses/Validacion'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+    get:
+      tags: [Solicitudes]
+      operationId: listarMisSolicitudes
+      summary: Lista las solicitudes del usuario de la sesión (RF-09)
+      description: Orden fijo `fecha_registro DESC, id DESC`. Solo devuelve solicitudes propias.
+      parameters:
+        - name: estado
+          in: query
+          schema:
+            $ref: '#/components/schemas/CodigoEstado'
+        - name: prioridad_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 4
+        - name: desde
+          in: query
+          description: Fecha de registro desde (inclusive)
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          description: Fecha de registro hasta (inclusive)
+          schema:
+            type: string
+            format: date
+        - name: q
+          in: query
+          description: Texto en título o número (1..100 caracteres)
+          schema:
+            type: string
+            maxLength: 100
+        - name: pagina
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: por_pagina
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        '200':
+          description: Página de resultados
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, data, meta]
+                properties:
+                  ok:
+                    const: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SolicitudResumen'
+                  meta:
+                    $ref: '#/components/schemas/Paginacion'
+        '400':
+          $ref: '#/components/responses/ParametroInvalido'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /solicitudes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdSolicitud'
+    get:
+      tags: [Solicitudes]
+      operationId: verSolicitud
+      summary: Detalle con historial (RF-09)
+      responses:
+        '200':
+          description: Detalle de la solicitud
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SolicitudDetalle'
+        '400':
+          $ref: '#/components/responses/ParametroInvalido'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermiso'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+    put:
+      tags: [Solicitudes]
+      operationId: editarSolicitud
+      summary: Edita título, descripción y tipo (solo REGISTRADA y solo el solicitante, RN-D10)
+      description: |
+        `area_destino_id` y `prioridad_id` no son editables: si se envían con otro valor responde 422;
+        si coinciden con los actuales se ignoran. Si nada cambia responde 200 sin modificar la `version`.
+      parameters:
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudEdicion'
+      responses:
+        '200':
+          description: Solicitud actualizada (nueva `version`, historial EDICION)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SolicitudDetalle'
+        '400':
+          $ref: '#/components/responses/ParametroInvalido'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermisoOCsrf'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '409':
+          $ref: '#/components/responses/Conflicto'
+        '422':
+          $ref: '#/components/responses/Validacion'
+    delete:
+      tags: [Solicitudes]
+      operationId: cancelarSolicitud
+      summary: Cancela la solicitud con motivo (RF-14, RN-D04). No borra la fila.
+      description: |
+        Permitido solo en REGISTRADA (transición T03) o ASIGNADA (T06) y solo al solicitante.
+        Cambia el estado a CANCELADA, fija `fecha_cierre` e inserta un evento CAMBIO_ESTADO con el motivo.
+      parameters:
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudCancelacion'
+      responses:
+        '200':
+          description: Solicitud cancelada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespuestaOk'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SolicitudDetalle'
+        '400':
+          $ref: '#/components/responses/ParametroInvalido'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermisoOCsrf'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '409':
+          $ref: '#/components/responses/Conflicto'
+        '422':
+          $ref: '#/components/responses/Validacion'
+
+security:
+  - cookieSesion: []
+
+components:
+  securitySchemes:
+    cookieSesion:
+      type: apiKey
+      in: cookie
+      name: SIS_SESSID
+
+  parameters:
+    CsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Token CSRF de la sesión (devuelto por login y me)
+      schema:
+        type: string
+        pattern: '^[0-9a-f]{64}$'
+    IdSolicitud:
+      name: id
+      in: path
+      required: true
+      description: Identificador numérico de la solicitud (entero positivo)
+      schema:
+        type: integer
+        minimum: 1
+
+  schemas:
+    RespuestaOk:
+      type: object
+      required: [ok, data]
+      properties:
+        ok:
+          const: true
+        data: {}
+    RespuestaError:
+      type: object
+      required: [ok, error]
+      properties:
+        ok:
+          const: false
+        error:
+          type: object
+          required: [codigo, mensaje, detalles]
+          properties:
+            codigo:
+              type: string
+              enum:
+                - JSON_INVALIDO
+                - PARAMETRO_INVALIDO
+                - NO_AUTENTICADO
+                - CREDENCIALES_INVALIDAS
+                - CSRF_INVALIDO
+                - SIN_PERMISO
+                - NO_ENCONTRADO
+                - RUTA_NO_ENCONTRADA
+                - METODO_NO_PERMITIDO
+                - ESTADO_NO_PERMITE
+                - CONFLICTO_VERSION
+                - VALIDACION
+                - DEMASIADOS_INTENTOS
+                - ERROR_INTERNO
+                - SERVICIO_NO_DISPONIBLE
+            mensaje:
+              type: string
+            detalles:
+              description: Errores por campo (validación) o null
+              oneOf:
+                - type: 'null'
+                - type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+    Health:
+      type: object
+      properties:
+        estado:
+          const: ok
+        base_datos:
+          const: ok
+        hora_servidor:
+          $ref: '#/components/schemas/FechaHora'
+    Estadisticas:
+      type: object
+      required: [total, registradas, en_proceso, atendidas_cerradas, por_estado, generado_en]
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        registradas:
+          type: integer
+          minimum: 0
+          description: Estado REGISTRADA (pendientes de asignar)
+        en_proceso:
+          type: integer
+          minimum: 0
+          description: Estados ASIGNADA + EN_PROCESO
+        atendidas_cerradas:
+          type: integer
+          minimum: 0
+          description: Estados ATENDIDA + CERRADA
+        por_estado:
+          type: array
+          description: Los 7 estados de cat_estado en su orden, incluidos los de 0
+          items:
+            type: object
+            required: [codigo, nombre, total]
+            properties:
+              codigo:
+                $ref: '#/components/schemas/CodigoEstado'
+              nombre:
+                type: string
+              total:
+                type: integer
+                minimum: 0
+        generado_en:
+          $ref: '#/components/schemas/FechaHora'
+    Catalogos:
+      type: object
+      required: [areas, tipos_solicitud, prioridades]
+      properties:
+        areas:
+          type: array
+          description: Ordenadas por nombre
+          items:
+            type: object
+            required: [id, codigo, nombre]
+            additionalProperties: false
+            properties:
+              id:
+                type: integer
+              codigo:
+                type: string
+              nombre:
+                type: string
+        tipos_solicitud:
+          type: array
+          description: Ordenados por nombre
+          items:
+            type: object
+            required: [id, nombre, descripcion]
+            additionalProperties: false
+            properties:
+              id:
+                type: integer
+              nombre:
+                type: string
+              descripcion:
+                type: [string, 'null']
+        prioridades:
+          type: array
+          description: Ordenadas por orden (Baja a Urgente)
+          items:
+            type: object
+            required: [id, codigo, nombre, horas_max_atencion]
+            additionalProperties: false
+            properties:
+              id:
+                type: integer
+              codigo:
+                type: string
+              nombre:
+                type: string
+              horas_max_atencion:
+                type: integer
+                minimum: 1
+                description: Horas laborales máximas de atención
+    LoginEntrada:
+      type: object
+      required: [nombre_usuario, password]
+      properties:
+        nombre_usuario:
+          type: string
+          minLength: 3
+          maxLength: 50
+        password:
+          type: string
+          format: password
+          minLength: 1
+          maxLength: 255
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre_usuario:
+          type: string
+        nombres:
+          type: string
+        apellidos:
+          type: string
+        correo:
+          type: string
+          format: email
+        area:
+          type: object
+          properties:
+            id:
+              type: integer
+            codigo:
+              type: string
+            nombre:
+              type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [SOLICITANTE, JEFE_AREA, RESPONSABLE, ADMINISTRADOR]
+    Sesion:
+      type: object
+      properties:
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+        csrf_token:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+    SolicitudEntrada:
+      type: object
+      required: [titulo, descripcion, area_destino_id, tipo_solicitud_id, prioridad_id]
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 150
+        descripcion:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        area_destino_id:
+          $ref: '#/components/schemas/EnteroPositivo'
+        tipo_solicitud_id:
+          $ref: '#/components/schemas/EnteroPositivo'
+        prioridad_id:
+          description: 1 BAJA, 2 MEDIA, 3 ALTA, 4 URGENTE
+          oneOf:
+            - type: integer
+              minimum: 1
+              maximum: 4
+            - type: string
+              pattern: '^[1-4]$'
+      example:
+        titulo: Instalar impresora en Contabilidad
+        descripcion: La impresora HP del 2.º piso no está instalada en los equipos del área.
+        area_destino_id: 1
+        tipo_solicitud_id: 1
+        prioridad_id: 2
+    SolicitudEdicion:
+      type: object
+      required: [titulo, descripcion, tipo_solicitud_id, version]
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 150
+        descripcion:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        tipo_solicitud_id:
+          $ref: '#/components/schemas/EnteroPositivo'
+        version:
+          $ref: '#/components/schemas/Version'
+        area_destino_id:
+          description: No editable; solo se acepta igual al actual
+          $ref: '#/components/schemas/EnteroPositivo'
+        prioridad_id:
+          description: No editable por el solicitante; solo se acepta igual al actual
+          $ref: '#/components/schemas/EnteroPositivo'
+    SolicitudCancelacion:
+      type: object
+      required: [motivo, version]
+      properties:
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Se recortan los espacios; vacío o solo espacios responde 422
+        version:
+          $ref: '#/components/schemas/Version'
+      example:
+        motivo: Ya no se necesita.
+        version: 0
+    SolicitudResumen:
+      type: object
+      properties:
+        id:
+          type: integer
+        numero:
+          type: string
+          pattern: '^[0-9]{4}-[0-9]{5}$'
+        titulo:
+          type: string
+        area_destino:
+          $ref: '#/components/schemas/RefNombre'
+        tipo_solicitud:
+          $ref: '#/components/schemas/RefNombre'
+        prioridad:
+          $ref: '#/components/schemas/RefCodigo'
+        estado:
+          $ref: '#/components/schemas/Estado'
+        fecha_registro:
+          $ref: '#/components/schemas/FechaHora'
+        fecha_limite:
+          $ref: '#/components/schemas/FechaHora'
+        vencida:
+          type: boolean
+          description: Estado no final y fecha límite ya pasada
+    SolicitudDetalle:
+      allOf:
+        - $ref: '#/components/schemas/SolicitudResumen'
+        - type: object
+          properties:
+            descripcion:
+              type: string
+            solicitante:
+              $ref: '#/components/schemas/Persona'
+            responsable:
+              oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/Persona'
+            fecha_atencion:
+              oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/FechaHora'
+            fecha_cierre:
+              oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/FechaHora'
+            version:
+              $ref: '#/components/schemas/Version'
+            acciones:
+              type: object
+              properties:
+                puede_editar:
+                  type: boolean
+                puede_cancelar:
+                  type: boolean
+            historial:
+              type: array
+              items:
+                $ref: '#/components/schemas/EventoHistorial'
+    EventoHistorial:
+      type: object
+      properties:
+        id:
+          type: integer
+        tipo_evento:
+          type: string
+          enum: [REGISTRO, EDICION, ASIGNACION, CAMBIO_ESTADO, CAMBIO_PRIORIDAD]
+        fecha:
+          $ref: '#/components/schemas/FechaHora'
+        usuario:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/Persona'
+        estado_anterior:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/Estado'
+        estado_nuevo:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/Estado'
+        motivo:
+          type: [string, 'null']
+        detalle:
+          type: [object, 'null']
+          description: REGISTRO {prioridad_id, fecha_limite}; EDICION {campo -> {antes, despues}}
+    Paginacion:
+      type: object
+      properties:
+        pagina:
+          type: integer
+        por_pagina:
+          type: integer
+        total:
+          type: integer
+        total_paginas:
+          type: integer
+    Persona:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombres:
+          type: string
+        apellidos:
+          type: string
+    RefNombre:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+    RefCodigo:
+      type: object
+      properties:
+        id:
+          type: integer
+        codigo:
+          type: string
+        nombre:
+          type: string
+    Estado:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          maximum: 7
+        codigo:
+          $ref: '#/components/schemas/CodigoEstado'
+        nombre:
+          type: string
+    CodigoEstado:
+      type: string
+      enum: [REGISTRADA, ASIGNADA, EN_PROCESO, ATENDIDA, CERRADA, RECHAZADA, CANCELADA]
+    EnteroPositivo:
+      oneOf:
+        - type: integer
+          minimum: 1
+        - type: string
+          pattern: '^[1-9][0-9]{0,8}$'
+    Version:
+      description: Control de concurrencia optimista; enviar la leída en el detalle
+      oneOf:
+        - type: integer
+          minimum: 0
+        - type: string
+          pattern: '^[0-9]{1,9}$'
+    FechaHora:
+      type: string
+      pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$'
+      example: '2026-10-07 19:16:41'
+
+  responses:
+    JsonInvalido:
+      description: Cuerpo no JSON, mal formado o Content-Type incorrecto (JSON_INVALIDO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    ParametroInvalido:
+      description: Id o parámetros de consulta no válidos (PARAMETRO_INVALIDO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    NoAutenticado:
+      description: Sin sesión, sesión expirada o usuario inactivo (NO_AUTENTICADO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    CsrfInvalido:
+      description: Falta X-CSRF-Token o no coincide (CSRF_INVALIDO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    SinPermiso:
+      description: La solicitud no pertenece al usuario (SIN_PERMISO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    SinPermisoOCsrf:
+      description: Solicitud ajena (SIN_PERMISO) o token CSRF inválido (CSRF_INVALIDO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    NoEncontrado:
+      description: La solicitud no existe (NO_ENCONTRADO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    Conflicto:
+      description: Estado que no permite la acción (ESTADO_NO_PERMITE) o versión desactualizada (CONFLICTO_VERSION)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    Validacion:
+      description: Errores de validación por campo (VALIDACION)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    ErrorInterno:
+      description: Error no previsto; no expone detalles (ERROR_INTERNO)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'
+    ServicioNoDisponible:
+      description: La base de datos no responde (SERVICIO_NO_DISPONIBLE)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RespuestaError'

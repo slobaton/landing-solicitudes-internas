@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320">
+  <rect x="40" y="30" width="340" height="260" rx="16" fill="#FFFFFF"/>
+  <rect x="40" y="30" width="340" height="56" rx="16" fill="#E8EEF7"/>
+  <rect x="40" y="70" width="340" height="16" fill="#E8EEF7"/>
+  <text x="64" y="66" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#1B2A41">2026-00041</text>
+  <rect x="268" y="46" width="92" height="26" rx="13" fill="#FDEBD8"/>
+  <text x="314" y="64" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#1B2A41">Registrada</text>
+  <rect x="64" y="108" width="220" height="12" rx="6" fill="#1B2A41"/>
+  <rect x="64" y="132" width="290" height="8" rx="4" fill="#C9D6EA"/>
+  <rect x="64" y="150" width="250" height="8" rx="4" fill="#C9D6EA"/>
+  <text x="64" y="194" font-family="system-ui, sans-serif" font-size="13" fill="#4A5568">Prioridad</text>
+  <text x="64" y="214" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#1B2A41">Media · 24 h</text>
+  <text x="220" y="194" font-family="system-ui, sans-serif" font-size="13" fill="#4A5568">Fecha límite</text>
+  <text x="220" y="214" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#1B2A41">12/10 09:20</text>
+  <g transform="translate(64 240)">
+    <circle cx="10" cy="14" r="10" fill="#1F4E8C"/>
+    <rect x="22" y="12" width="56" height="4" fill="#1F4E8C"/>
+    <circle cx="90" cy="14" r="10" fill="#C9D6EA"/>
+    <rect x="102" y="12" width="56" height="4" fill="#C9D6EA"/>
+    <circle cx="170" cy="14" r="10" fill="#C9D6EA"/>
+    <rect x="182" y="12" width="56" height="4" fill="#C9D6EA"/>
+    <circle cx="250" cy="14" r="10" fill="#C9D6EA"/>
+  </g>
+  <circle cx="370" cy="282" r="30" fill="#0F766E"/>
+  <path d="M356 282l10 10 18-20" stroke="#FFFFFF" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

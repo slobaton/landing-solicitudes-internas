@@ -1,0 +1,199 @@
+/* Puntos de quiebre (móvil primero, diseno_landing.md §6): 600 px, 768 px (navegación), 900 px, 1200 px. */
+
+@media (min-width: 600px) {
+    .contenedor {
+        padding-inline: var(--esp-5);
+    }
+
+    .hero__acciones {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .rejilla--4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pasos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .formulario__fila {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* La marca se acorta cuando el espacio del encabezado es justo:
+   < 480 px (sesión + menú) y 768-899 px (navegación en línea + sesión). */
+@media (max-width: 479px), (min-width: 768px) and (max-width: 899px) {
+    .marca__sub {
+        display: none;
+    }
+}
+
+/* Tableta en adelante (§6.2): navegación visible en una línea, sin botón "Menú". */
+@media (min-width: 768px) {
+    .encabezado__barra {
+        flex-wrap: nowrap;
+    }
+
+    .navegacion {
+        order: 0;
+        margin-left: auto;
+    }
+
+    .encabezado__sesion {
+        order: 0;
+        margin-left: 0;
+    }
+
+    .navegacion,
+    .js .navegacion--plegable {
+        display: block;
+        width: auto;
+    }
+
+    .js .navegacion--plegable .navegacion__lista {
+        flex-direction: row;
+        padding-bottom: 0;
+    }
+
+    .boton-menu {
+        display: none;
+    }
+}
+
+@media (min-width: 900px) {
+    .seccion {
+        padding-block: var(--esp-8);
+    }
+
+    .hero {
+        padding-block: var(--esp-8);
+    }
+
+    .hero__rejilla {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    }
+
+    .hero__figura {
+        display: block;
+    }
+
+    .rejilla--4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    /* Cómo funciona: línea horizontal de 4 pasos con el número arriba. */
+    .pasos {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .paso {
+        padding-left: 0;
+        padding-top: calc(48px + var(--esp-4));
+    }
+
+    .paso::after {
+        content: "";
+        position: absolute;
+        top: 23px;
+        left: 56px;
+        right: calc(-1 * var(--esp-5) + 8px);
+        height: 2px;
+        background: var(--color-borde);
+    }
+
+    .paso:last-child::after {
+        display: none;
+    }
+
+    .acceso {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: start;
+    }
+
+    /* Mis solicitudes: tabla real desde 900 px. */
+    .tabla--solicitudes {
+        display: table;
+        background: var(--color-fondo);
+    }
+
+    .tabla--solicitudes thead {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip: auto;
+        display: table-header-group;
+    }
+
+    .tabla--solicitudes tbody {
+        display: table-row-group;
+    }
+
+    .tabla--solicitudes tr {
+        display: table-row;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .tabla--solicitudes td,
+    .tabla--solicitudes td.celda--acciones {
+        display: table-cell;
+        width: auto;
+        padding: var(--esp-2) var(--esp-3);
+        border-bottom: 1px solid var(--color-borde);
+        vertical-align: middle;
+    }
+
+    .tabla--solicitudes td::before {
+        content: none;
+    }
+
+    .tabla--solicitudes .celda--titulo {
+        max-width: 22rem;
+    }
+
+    .tabla--solicitudes td.numero {
+        white-space: nowrap;
+    }
+
+    .como-funciona__extra {
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .pie__rejilla {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+@media (min-width: 1200px) {
+    .contenedor {
+        padding-inline: 0;
+    }
+}
+
+/* Pantallas bajas (celular horizontal, zoom del 400 %): el encabezado fijo taparía gran
+   parte del contenido, así que deja de ser fijo (WCAG 1.4.10 y 2.4.11; revisión CP-FRONT-06). */
+@media (max-height: 500px) {
+    .encabezado {
+        position: static;
+    }
+
+    html {
+        scroll-padding-top: var(--esp-4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}

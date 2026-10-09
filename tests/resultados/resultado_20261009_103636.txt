@@ -1,0 +1,76 @@
+# Suite API solicitudes — 2026-10-09 10:36:35 — http://127.0.0.1:8080
+# OpenAPI: cada ruta de routes/api.php está documentada
+ok 1 - openapi.yaml no contiene tabuladores
+ok 2 - openapi.yaml declara openapi: 3.1.0
+ok 3 - GET /health documentada
+ok 4 - GET /estadisticas documentada
+ok 5 - POST /auth/login documentada
+ok 6 - POST /auth/logout documentada
+ok 7 - GET /auth/me documentada
+ok 8 - GET /catalogos documentada
+ok 9 - POST /solicitudes documentada
+ok 10 - GET /solicitudes documentada
+ok 11 - GET /solicitudes/{id} documentada
+ok 12 - PUT /solicitudes/{id} documentada
+ok 13 - DELETE /solicitudes/{id} documentada
+ok 14 - No hay operaciones documentadas sin ruta implementada
+# Sistema
+ok 15 - GET /health -> 200 y base_datos ok
+ok 16 - Ruta inexistente -> 404 RUTA_NO_ENCONTRADA
+ok 17 - DELETE /health -> 405 con Allow: GET
+# Autenticación
+ok 18 - GET /auth/me sin sesión -> 401 NO_AUTENTICADO
+ok 19 - POST /auth/login con JSON mal formado -> 400 JSON_INVALIDO
+ok 20 - POST /auth/login {} -> 422 VALIDACION con detalles
+ok 21 - POST /auth/login con contraseña errónea -> 401 CREDENCIALES_INVALIDAS
+ok 22 - POST /auth/login solicitante -> 200, cookie HttpOnly y csrf_token
+ok 23 - POST /auth/login jefe -> 200 con rol JEFE_AREA
+ok 24 - GET /auth/me con sesión -> 200 y mismo csrf_token
+# Landing: estadísticas y catálogos
+ok 25 - GET /estadisticas sin sesión -> 200, sin cookie de sesión
+ok 26 - GET /estadisticas: solo conteos enteros (total, registradas, en_proceso, atendidas_cerradas, por_estado, generado_en)
+ok 27 - GET /estadisticas: total = suma de por_estado y agregados coherentes
+ok 28 - POST /estadisticas -> 405 METODO_NO_PERMITIDO
+ok 29 - GET /catalogos sin sesión -> 401 NO_AUTENTICADO
+ok 30 - GET /catalogos con sesión -> 200 con areas, tipos_solicitud y prioridades no vacíos
+ok 31 - GET /catalogos: columnas mínimas (sin jefe_usuario_id ni activo)
+ok 32 - GET /catalogos: prioridades en orden BAJA, MEDIA, ALTA, URGENTE con horas enteras
+ok 33 - PUT /catalogos -> 405 METODO_NO_PERMITIDO
+# Solicitudes: registrar y consultar
+ok 34 - POST /solicitudes sin sesión -> 401
+ok 35 - POST /solicitudes sin X-CSRF-Token -> 403 CSRF_INVALIDO
+ok 36 - POST /solicitudes inválida -> 422 con errores por campo
+ok 37 - POST /solicitudes con área inexistente -> 422
+ok 38 - POST /solicitudes válida -> 201, Location, número AAAA-NNNNN, REGISTRADA, version 0, historial REGISTRO
+ok 39 - fecha_limite posterior a fecha_registro
+ok 40 - GET /estadisticas tras registrar: total y registradas +1
+ok 41 - GET /solicitudes?q=<número> -> 200 con la solicitud creada
+ok 42 - GET /solicitudes con filtros y paginación -> 200 y meta coherente
+ok 43 - GET /solicitudes con parámetros inválidos -> 400 PARAMETRO_INVALIDO
+ok 44 - GET /solicitudes del jefe no incluye solicitudes ajenas
+ok 45 - GET /solicitudes/{id} propia -> 200 con historial
+ok 46 - GET /solicitudes/{id} ajena -> 403 SIN_PERMISO
+ok 47 - GET /solicitudes/{id} inexistente -> 404 NO_ENCONTRADO
+ok 48 - GET /solicitudes/abc -> 400 PARAMETRO_INVALIDO
+# Solicitudes: editar y cancelar
+ok 49 - PUT sin sesión -> 401
+ok 50 - PUT sin X-CSRF-Token -> 403 CSRF_INVALIDO
+ok 51 - PUT de solicitud ajena -> 403 SIN_PERMISO
+ok 52 - PUT de solicitud inexistente -> 404
+ok 53 - PUT cambiando área destino -> 422
+ok 54 - PUT válido -> 200, version 1, historial EDICION con antes/después del título
+ok 55 - PUT con version desactualizada -> 409 CONFLICTO_VERSION
+ok 56 - DELETE sin motivo -> 422
+ok 57 - DELETE de solicitud ajena -> 403 SIN_PERMISO
+ok 58 - DELETE con version desactualizada -> 409 CONFLICTO_VERSION
+ok 59 - DELETE válido -> 200, CANCELADA, fecha_cierre, version 2, historial CAMBIO_ESTADO con motivo
+ok 60 - GET /estadisticas tras cancelar: registradas vuelve al valor inicial y total queda +1 (no se borra)
+ok 61 - PUT sobre cancelada -> 409 ESTADO_NO_PERMITE
+ok 62 - DELETE sobre cancelada -> 409 ESTADO_NO_PERMITE
+ok 63 - La solicitud cancelada sigue existiendo (GET -> 200, no se borra)
+# Cierre de sesión
+ok 64 - POST /auth/logout con token inválido -> 403 CSRF_INVALIDO
+ok 65 - POST /auth/logout válido -> 200
+ok 66 - GET /auth/me tras logout -> 401
+ok 67 - POST /auth/logout del jefe -> 200
+# Resultado: 67 pruebas, 67 correctas, 0 fallidas. Solicitud creada: id 17 (2026-00017), cancelada.

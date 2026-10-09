@@ -1,0 +1,242 @@
+/* Estructura: contenedor, encabezado, secciones, hero, rejillas y pie (móvil primero). */
+.contenedor {
+    width: 100%;
+    max-width: var(--contenedor);
+    margin-inline: auto;
+    padding-inline: var(--esp-4);
+}
+
+/* Enlace "Saltar al contenido": visible solo con foco. */
+.saltar {
+    position: absolute;
+    top: var(--esp-2);
+    left: var(--esp-2);
+    z-index: 100;
+    padding: var(--esp-2) var(--esp-4);
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    font-weight: 600;
+    border-radius: var(--radio);
+    transform: translateY(-200%);
+}
+
+.saltar:focus {
+    transform: none;
+}
+
+/* Encabezado */
+.encabezado {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-fondo);
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.encabezado__barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--esp-2) var(--esp-4);
+    min-height: var(--alto-encabezado);
+    padding-block: var(--esp-2);
+}
+
+.marca {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--esp-2);
+    min-height: var(--tactil);
+    color: var(--color-texto);
+    font-weight: 700;
+    font-size: 1.125rem;
+    text-decoration: none;
+}
+
+.marca__sub {
+    font-weight: 400;
+    color: var(--color-texto-suave);
+}
+
+.navegacion {
+    order: 4;
+    width: 100%;
+}
+
+/* Móvil: marca, botón de sesión y "Menú" en la primera línea; la navegación debajo. */
+.encabezado__sesion {
+    order: 2;
+    margin-left: auto;
+}
+
+.boton-menu {
+    order: 3;
+}
+
+.navegacion__lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-1) var(--esp-2);
+    list-style: none;
+}
+
+.navegacion__enlace {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tactil);
+    padding-inline: var(--esp-3);
+    color: var(--color-texto);
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radio);
+}
+
+.navegacion__enlace:hover {
+    background: var(--color-info-fondo);
+    color: var(--color-primario-oscuro);
+}
+
+/* Con JavaScript, en pantallas pequeñas el menú se pliega (js/modules/navegacion.js). */
+.js .navegacion--plegable {
+    display: none;
+}
+
+.js .navegacion--plegable.navegacion--abierta {
+    display: block;
+}
+
+.js .navegacion--plegable .navegacion__lista {
+    flex-direction: column;
+    padding-bottom: var(--esp-2);
+}
+
+/* Secciones */
+.seccion {
+    padding-block: var(--esp-7);
+}
+
+.seccion--alterna {
+    background: var(--color-fondo-alt);
+}
+
+.seccion__titulo {
+    color: var(--color-primario);
+}
+
+.seccion__intro,
+.seccion__cierre {
+    max-width: var(--lectura);
+    color: var(--color-texto-suave);
+    font-size: 1.0625rem;
+}
+
+.seccion__cierre {
+    margin-top: var(--esp-5);
+    margin-bottom: 0;
+    color: var(--color-texto);
+}
+
+/* Hero */
+.hero {
+    background: var(--color-hero);
+    color: #FFFFFF;
+    padding-block: var(--esp-7);
+}
+
+.hero__rejilla {
+    display: grid;
+    gap: var(--esp-6);
+    align-items: center;
+}
+
+.hero__antetitulo {
+    margin-bottom: var(--esp-2);
+    color: var(--color-hero-suave);
+    font-size: var(--texto-pequeno);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.hero__titulo {
+    color: #FFFFFF;
+    max-width: 22ch;
+}
+
+.hero__subtitulo {
+    max-width: 52ch;
+    color: var(--color-hero-suave);
+    font-size: 1.125rem;
+}
+
+.hero__acciones {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-3);
+    margin-top: var(--esp-5);
+}
+
+.hero__figura {
+    display: none;
+}
+
+/* Rejillas */
+.rejilla {
+    display: grid;
+    gap: var(--esp-4);
+    list-style: none;
+    margin-top: var(--esp-5);
+}
+
+/* Pie */
+.pie {
+    background: var(--color-hero);
+    color: var(--color-hero-suave);
+    padding-top: var(--esp-7);
+}
+
+.pie a {
+    color: #FFFFFF;
+}
+
+.pie a:hover {
+    color: var(--color-hero-suave);
+}
+
+.pie__rejilla {
+    display: grid;
+    gap: var(--esp-5);
+}
+
+.pie__titulo {
+    color: #FFFFFF;
+    font-size: 1.125rem;
+}
+
+.pie__texto {
+    max-width: 48ch;
+}
+
+.pie__enlaces {
+    list-style: none;
+    display: grid;
+    gap: var(--esp-1);
+}
+
+.pie__enlaces a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tactil);
+}
+
+.pie__legal {
+    margin-top: var(--esp-5);
+    padding-block: var(--esp-4);
+    border-top: 1px solid rgb(201 214 234 / 0.25);
+    font-size: var(--texto-pequeno);
+}
+
+.pie__legal p {
+    margin: 0;
+}
